@@ -1,9 +1,9 @@
 # =====================================================
 # Week 2 - Machine Learning Pipeline
 # Project: Arrhythmia Detection
-# Student: Hind Elawity
 # =====================================================
 
+import os
 import pandas as pd
 import numpy as np
 import joblib
@@ -18,12 +18,23 @@ from imblearn.over_sampling import SMOTE
 
 
 # =====================================================
+# 0️⃣ Paths Configuration (Robust Handling)
+# =====================================================
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_PATH = os.path.join(BASE_DIR, "data", "arrhythmia.data")
+MODEL_PATH = os.path.join(BASE_DIR, "data", "best_model.pkl")
+
+os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
+
+
+# =====================================================
 # 1️⃣ Load Dataset
 # =====================================================
 
 print("Loading dataset...")
 
-df = pd.read_csv("../data/arrhythmia.data", header=None)
+df = pd.read_csv(DATA_PATH, header=None)
 df.rename(columns={df.columns[-1]: "class"}, inplace=True)
 
 print("Initial shape:", df.shape)
@@ -35,7 +46,6 @@ print("Initial shape:", df.shape)
 
 # 1 -> 0 (Normal)
 # 2-16 -> 1 (Arrhythmia)
-
 df["class"] = df["class"].apply(lambda x: 0 if x == 1 else 1)
 
 print("\nClass distribution:")
@@ -122,7 +132,6 @@ print(grid_search.best_params_)
 # =====================================================
 
 best_model = grid_search.best_estimator_
-
 y_pred = best_model.predict(X_test)
 
 print("\nClassification Report:")
@@ -136,6 +145,6 @@ print(confusion_matrix(y_test, y_pred))
 # 8️⃣ Save Model
 # =====================================================
 
-joblib.dump(best_model, "../data/best_model.pkl")
+joblib.dump(best_model, MODEL_PATH)
 
-print("\nModel saved successfully in data/best_model.pkl")
+print(f"\nModel saved successfully in: {MODEL_PATH}")
