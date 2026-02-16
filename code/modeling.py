@@ -1,66 +1,52 @@
-# =====================================================
-# Week 2 - Machine Learning Pipeline
-# Project: Arrhythmia Detection
-# =====================================================
+import warnings
+warnings.filterwarnings("ignore")
 
 import os
 import pandas as pd
 import numpy as np
-import joblib
+import mlflow
+import mlflow.sklearn
 
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score, accuracy_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 
 from imblearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTE
 
 
-# =====================================================
-# 0️⃣ Paths Configuration (Robust Handling)
-# =====================================================
+# ===============================
+# 1️⃣ MLflow Setup
+# ===============================
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_PATH = os.path.join(BASE_DIR, "data", "arrhythmia.data")
-MODEL_PATH = os.path.join(BASE_DIR, "data", "best_model.pkl")
-
-os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_experiment("Arrhythmia_Experiment")
 
 
-# =====================================================
-# 1️⃣ Load Dataset
-# =====================================================
+# ===============================
+# 2️⃣ Load Dataset
+# ===============================
 
 print("Loading dataset...")
 
-df = pd.read_csv(DATA_PATH, header=None)
+data_path = os.path.join("data", "arrhythmia.data")
+
+df = pd.read_csv(data_path, header=None)
+
+# Rename last column to class
 df.rename(columns={df.columns[-1]: "class"}, inplace=True)
 
-print("Initial shape:", df.shape)
 
-
-# =====================================================
-# 2️⃣ Target Transformation (Binary Classification)
-# =====================================================
-
-# 1 -> 0 (Normal)
-# 2-16 -> 1 (Arrhythmia)
-df["class"] = df["class"].apply(lambda x: 0 if x == 1 else 1)
-
-print("\nClass distribution:")
-print(df["class"].value_counts())
-
-
-# =====================================================
+# ===============================
 # 3️⃣ Data Cleaning
-# =====================================================
+# ===============================
 
-# Replace '?' with NaN
+# Replace ? with NaN
 df.replace("?", np.nan, inplace=True)
 
-# Convert to numeric
-df = df.apply(pd.to_numeric)
+# Convert all columns to numeric
+df = df.apply(pd.to_numeric, errors="coerce")
 
 # Remove columns with >40% missing values
 df = df.loc[:, df.isnull().mean() < 0.4]
@@ -68,12 +54,13 @@ df = df.loc[:, df.isnull().mean() < 0.4]
 # Fill remaining missing values with median
 df.fillna(df.median(), inplace=True)
 
-print("\nShape after cleaning:", df.shape)
+# Binary classification (Normal vs Others)
+df["class"] = df["class"].apply(lambda x: 0 if x == 1 else 1)
 
 
-# =====================================================
-# 4️⃣ Train / Test Split
-# =====================================================
+# ===============================
+# 4️⃣ Split Data
+# ===============================
 
 X = df.drop("class", axis=1)
 y = df["class"]
@@ -86,65 +73,52 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42
 )
 
-print("\nTrain shape:", X_train.shape)
-print("Test shape:", X_test.shape)
 
-
-# =====================================================
-# 5️⃣ Build ML Pipeline (Scaler + SMOTE + RF)
-# =====================================================
+# ===============================
+# 5️⃣ Model Pipeline
+# ===============================
 
 pipeline = Pipeline([
     ("scaler", StandardScaler()),
     ("smote", SMOTE(random_state=42)),
-    ("classifier", RandomForestClassifier(random_state=42))
+    ("classifier", RandomForestClassifier(
+        n_estimators=200,
+        max_depth=10,
+        random_state=42
+    ))
 ])
 
 
-# =====================================================
-# 6️⃣ Hyperparameter Tuning (GridSearchCV)
-# =====================================================
+# ===============================
+# 6️⃣ Train + Log to MLflow
+# ===============================
 
-param_grid = {
-    "classifier__n_estimators": [100, 200],
-    "classifier__max_depth": [None, 10, 20],
-    "classifier__min_samples_split": [2, 5]
-}
+with mlflow.start_run():
 
-print("\nTraining model with GridSearch...")
+    pipeline.fit(X_train, y_train)
 
-grid_search = GridSearchCV(
-    pipeline,
-    param_grid,
-    cv=5,
-    scoring="f1",
-    n_jobs=-1
-)
+    y_pred = pipeline.predict(X_test)
 
-grid_search.fit(X_train, y_train)
+    f1 = f1_score(y_test, y_pred)
+    acc = accuracy_score(y_test, y_pred)
 
-print("\nBest Parameters Found:")
-print(grid_search.best_params_)
+    print(f"F1 Score: {f1}")
+    print(f"Accuracy: {acc}")
 
+    # Log parameters
+    mlflow.log_param("model", "RandomForest")
+    mlflow.log_param("n_estimators", 200)
+    mlflow.log_param("max_depth", 10)
 
-# =====================================================
-# 7️⃣ Evaluation
-# =====================================================
+    # Log metrics
+    mlflow.log_metric("f1_score", f1)
+    mlflow.log_metric("accuracy", acc)
 
-best_model = grid_search.best_estimator_
-y_pred = best_model.predict(X_test)
+    # Log model + register
+    mlflow.sklearn.log_model(
+        sk_model=pipeline,
+        artifact_path="model",
+        registered_model_name="Arrhythmia_Model"
+    )
 
-print("\nClassification Report:")
-print(classification_report(y_test, y_pred))
-
-print("\nConfusion Matrix:")
-print(confusion_matrix(y_test, y_pred))
-
-
-# =====================================================
-# 8️⃣ Save Model
-# =====================================================
-
-joblib.dump(best_model, MODEL_PATH)
-
-print(f"\nModel saved successfully in: {MODEL_PATH}")
+print("✅ Model trained and logged successfully!")
