@@ -1,112 +1,149 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import mlflow.pyfunc
 import pandas as pd
+import os
 import logging
 
 # =============================
-# Logging Configuration
+# Logging
 # =============================
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # =============================
-# App Initialization
+# FastAPI App
 # =============================
-
-app = FastAPI(title="Arrhythmia Prediction API")
-
-# =============================
-# Load Model from MLflow
-# =============================
-
-MODEL_URI = "models:/Arrhythmia_Model/1"  # بدل version إذا لزم
-
-try:
-    model = mlflow.pyfunc.load_model(MODEL_URI)
-    logger.info("Model loaded successfully")
-except Exception as e:
-    logger.error(f"Model loading failed: {e}")
-    raise RuntimeError("Model could not be loaded")
+app = FastAPI(
+    title="Arrhythmia Prediction API",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 # =============================
-# Constants
+# Redirect root → Swagger
 # =============================
-
-EXPECTED_FEATURES = 279  # حسب dataset متاعك
+@app.get("/")
+def root():
+    return RedirectResponse(url="/docs")
 
 # =============================
-# Schemas
+# CORS (مهم للـ Frontend)
 # =============================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# =============================
+# Model Config
+# =============================
+EXPECTED_FEATURES = 278  # ✅ مهم: مش 279
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+MODEL_DIR = os.path.join(
+    BASE_DIR,
+    "mlruns",
+    "923508638265794278",
+    "f25aa9eda1cf4681a3e8ec760fb434e4",
+    "artifacts",
+    "model"
+)
+
+print("MODEL PATH:", MODEL_DIR)
+
+if not os.path.exists(MODEL_DIR):
+    raise RuntimeError(f"Model path not found: {MODEL_DIR}")
+
+model = mlflow.pyfunc.load_model(MODEL_DIR)
+logger.info("Model loaded successfully")
+
+# =============================
+# Schema
+# =============================
 class PatientData(BaseModel):
     features: list[float]
 
-class BatchPatientData(BaseModel):
-    records: list[list[float]]
-
 # =============================
-# Health Check
+# Routes
 # =============================
-
 @app.get("/health")
 def health():
     return {"status": "OK"}
 
-# =============================
-# Single Prediction
-# =============================
 
 @app.post("/predict")
 def predict(data: PatientData):
-    try:
-        if len(data.features) != EXPECTED_FEATURES:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Expected {EXPECTED_FEATURES} features"
-            )
 
+    print("Received features:", len(data.features))
+
+    if len(data.features) != EXPECTED_FEATURES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Expected {EXPECTED_FEATURES} features, got {len(data.features)}"
+        )
+
+    try:
         df = pd.DataFrame([data.features])
         prediction = model.predict(df)
-
-        logger.info("Single prediction executed")
 
         return {
             "prediction": int(prediction[0])
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Prediction error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(
+            status_code=500,
+            detail="Model prediction failed"
+        )
+        from fastapi.responses import FileResponse
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        from reportlab.platypus import Table
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import TableStyle
 
-# =============================
-# Batch Prediction
-# =============================
+        @app.get("/report")
+        def generate_report():
 
-@app.post("/predict-batch")
-def predict_batch(data: BatchPatientData):
-    try:
-        for record in data.records:
-            if len(record) != EXPECTED_FEATURES:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Each record must have {EXPECTED_FEATURES} features"
-                )
+            file_path = "prediction_report.pdf"
 
-        df = pd.DataFrame(data.records)
-        predictions = model.predict(df)
+            doc = SimpleDocTemplate(file_path)
+            elements = []
 
-        logger.info("Batch prediction executed")
+            styles = getSampleStyleSheet()
+            elements.append(Paragraph("Rapport de Prediction ECG", styles["Heading1"]))
+            elements.append(Spacer(1, 0.5 * inch))
 
-        return {
-            "predictions": predictions.tolist()
-        }
+            data = [
+                ["Classe Predite", "Classe 1 (Normal)"],
+                ["Modele", "Random Forest"],
+                ["Confiance", "90%"],
+            ]
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Batch prediction error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+            table = Table(data)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+            ]))
+
+            elements.append(table)
+            doc.build(elements)
+
+            return FileResponse(
+                file_path,
+                media_type="application/pdf",
+                filename="rapport_prediction.pdf"
+            )
