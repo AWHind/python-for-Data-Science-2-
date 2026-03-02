@@ -105,11 +105,6 @@ Ce projet démontre l’importance d’un pipeline structuré en Data Science po
 
 ---
 
-## 📂 Structure du Projet
-
-
----
-
 ## 🚀 Exécution du Projet
 
 ```bash
