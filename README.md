@@ -1,102 +1,112 @@
-# 🫀 Détection et Classification des Arythmies Cardiaques  
+# 🫀 Détection et Classification des Arythmies Cardiaques
 ### Projet Data Science – Hind Elawity | Groupe B
 
 ---
 
-## 📖 Présentation
+## 📌 Résumé Exécutif
 
-Ce projet consiste à développer un modèle de Machine Learning capable de détecter et classifier les arythmies cardiaques à partir de données médicales issues d’électrocardiogrammes (ECG).
+Ce projet vise à développer un modèle de Machine Learning capable de détecter et classifier les arythmies cardiaques à partir de données médicales issues d’électrocardiogrammes (ECG).
 
-Les arythmies cardiaques représentent un enjeu important en cardiologie. Une détection précoce permet d’améliorer le diagnostic et la prise en charge des patients.
+Les arythmies cardiaques constituent un enjeu majeur en cardiologie. Une détection fiable et précoce peut améliorer significativement le diagnostic et la prise en charge des patients.
 
-Ce travail a été réalisé dans le cadre de la formation **Data Science – Hind Elawity (Groupe B)**.
+Ce travail a été réalisé dans le cadre de la formation **Data Science – Hind Elawity (Groupe B)** en appliquant un workflow complet de Data Science sur un dataset médical réel.
 
 ---
 
-## 🎯 Objectifs
+## 🎯 Objectifs Techniques
 
-- Analyser un dataset médical complexe
-- Nettoyer et préparer les données
-- Construire plusieurs modèles de classification
-- Comparer leurs performances
-- Sélectionner le modèle le plus performant
+- Analyser un dataset médical à haute dimensionnalité  
+- Gérer les valeurs manquantes et les données complexes  
+- Construire et comparer plusieurs modèles de classification  
+- Optimiser les performances du modèle  
+- Sélectionner la solution la plus robuste  
 
 ---
 
 ## 📊 Jeu de Données
 
-Dataset utilisé : **Arrhythmia – UCI Machine Learning Repository**
-
-Lien officiel :  
-https://archive.ics.uci.edu/ml/datasets/arrhythmia
+**Nom du dataset :** Arrhythmia  
+**Source :** UCI Machine Learning Repository  
+🔗 https://archive.ics.uci.edu/ml/datasets/arrhythmia  
 
 ### Caractéristiques :
 
-- 452 patients
-- 279 variables
-- 16 classes d’arythmie
-- Données multivariées
-- Présence de valeurs manquantes
+- 452 patients  
+- 279 variables  
+- 16 classes d’arythmie  
+- Données multivariées  
+- Présence significative de valeurs manquantes  
 
-Le dataset contient des mesures électrocardiographiques détaillées, ce qui en fait un problème de classification à haute dimensionnalité.
+Le dataset contient des mesures électrocardiographiques détaillées, ce qui en fait un problème de classification multi-classes complexe.
 
 ---
 
 ## 🧠 Méthodologie
 
-### 1️⃣ Analyse des données
-- Étude de la structure du dataset
-- Analyse de la distribution des classes
-- Identification des valeurs manquantes
+Le projet a suivi un cycle de vie structuré :
+
+### 1️⃣ Compréhension des données
+- Analyse de la structure  
+- Identification des types de variables  
+- Étude de la distribution des classes  
+- Analyse des valeurs manquantes  
 
 ### 2️⃣ Prétraitement
-- Gestion des valeurs manquantes
-- Suppression des variables peu pertinentes
-- Normalisation des variables numériques
-- Encodage des variables catégorielles
+- Traitement des valeurs manquantes  
+- Suppression des variables peu pertinentes  
+- Normalisation des variables numériques  
+- Encodage des variables catégorielles  
 
-### 3️⃣ Analyse exploratoire (EDA)
-- Visualisation des distributions
-- Analyse des corrélations
-- Détection du déséquilibre des classes
+### 3️⃣ Analyse Exploratoire (EDA)
+- Analyse des corrélations  
+- Visualisation des distributions  
+- Détection du déséquilibre des classes  
 
 ### 4️⃣ Modélisation
-Implémentation et comparaison de plusieurs modèles :
+Implémentation et comparaison des modèles suivants :
 
-- Régression Logistique
-- Random Forest
-- Support Vector Machine (SVM)
+- Régression Logistique  
+- Random Forest  
+- Support Vector Machine (SVM)  
 
-### 5️⃣ Évaluation
+### 5️⃣ Évaluation des performances
+
 Les modèles ont été évalués à l’aide de :
 
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- Matrice de confusion
+- Accuracy  
+- Precision  
+- Recall  
+- F1-score  
+- Matrice de confusion  
 
-Le modèle final a été sélectionné selon ses performances globales et sa capacité de généralisation.
-
----
-
-## 📈 Résultats
-
-- Amélioration des performances après prétraitement
-- Réduction des erreurs de classification
-- Mise en évidence de l’importance du nettoyage des données dans les projets médicaux
+Le modèle final a été sélectionné selon sa performance globale et sa capacité de généralisation.
 
 ---
 
-## 🛠️ Technologies Utilisées
+## 📈 Résultats Clés
 
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-- Seaborn
-- Jupyter Notebook
+- Amélioration notable des performances après prétraitement  
+- Réduction des erreurs de classification  
+- Validation de l’importance du nettoyage des données dans les projets médicaux  
+
+Ce projet démontre l’importance d’un pipeline structuré en Data Science pour exploiter efficacement des données médicales complexes.
+
+---
+
+## 🛠️ Stack Technique
+
+- Python  
+- Pandas  
+- NumPy  
+- Scikit-learn  
+- Matplotlib  
+- Seaborn  
+- Jupyter Notebook  
+
+---
+
+## 📂 Structure du Projet
+
 
 ---
 
