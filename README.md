@@ -1,145 +1,109 @@
-🫀 Classification des Arythmies Cardiaques
-📌 Description du Projet
+# 🫀 Détection et Classification des Arythmies Cardiaques  
+### Projet Data Science – Hind Elawity | Groupe B
 
-Ce projet a pour objectif de détecter et classifier les arythmies cardiaques à l’aide des techniques de Machine Learning.
+---
 
-L’objectif principal est de développer un modèle capable de :
+## 📖 Présentation
 
-Détecter la présence ou l’absence d’arythmie
+Ce projet consiste à développer un modèle de Machine Learning capable de détecter et classifier les arythmies cardiaques à partir de données médicales issues d’électrocardiogrammes (ECG).
 
-Classifier les patients dans l’un des 16 groupes médicaux
+Les arythmies cardiaques représentent un enjeu important en cardiologie. Une détection précoce permet d’améliorer le diagnostic et la prise en charge des patients.
 
-Comparer les performances de plusieurs modèles de classification
+Ce travail a été réalisé dans le cadre de la formation **Data Science – Hind Elawity (Groupe B)**.
 
-Ce travail permet d’appliquer les concepts de Data Science sur un dataset médical réel et complexe.
+---
 
-🎓 Contexte Académique
+## 🎯 Objectifs
 
-Ce projet a été réalisé dans le cadre de la formation Data Science – Hind Elawity (Groupe B).
+- Analyser un dataset médical complexe
+- Nettoyer et préparer les données
+- Construire plusieurs modèles de classification
+- Comparer leurs performances
+- Sélectionner le modèle le plus performant
 
-L’objectif pédagogique était de suivre un workflow complet de Data Science :
+---
 
-Compréhension des données → Prétraitement → Analyse exploratoire → Modélisation → Évaluation.
+## 📊 Jeu de Données
 
-📊 Dataset
+Dataset utilisé : **Arrhythmia – UCI Machine Learning Repository**
 
-Le projet utilise le dataset Arrhythmia disponible sur le dépôt officiel UCI Machine Learning Repository.
-
-🔗 Lien du dataset :
+Lien officiel :  
 https://archive.ics.uci.edu/ml/datasets/arrhythmia
 
-Informations sur les données :
+### Caractéristiques :
 
-Nombre d’instances : 452 patients
+- 452 patients
+- 279 variables
+- 16 classes d’arythmie
+- Données multivariées
+- Présence de valeurs manquantes
 
-Nombre de variables : 279 attributs
+Le dataset contient des mesures électrocardiographiques détaillées, ce qui en fait un problème de classification à haute dimensionnalité.
 
-Type : Classification multivariée
+---
 
-Variable cible : Classe d’arythmie (16 catégories)
+## 🧠 Méthodologie
 
-Valeurs manquantes : Oui
+### 1️⃣ Analyse des données
+- Étude de la structure du dataset
+- Analyse de la distribution des classes
+- Identification des valeurs manquantes
 
-Le dataset contient des mesures issues d’ECG (électrocardiogramme), incluant des variables numériques et catégorielles.
+### 2️⃣ Prétraitement
+- Gestion des valeurs manquantes
+- Suppression des variables peu pertinentes
+- Normalisation des variables numériques
+- Encodage des variables catégorielles
 
-La forte dimensionnalité et la présence de valeurs manquantes ont nécessité un travail important de prétraitement.
+### 3️⃣ Analyse exploratoire (EDA)
+- Visualisation des distributions
+- Analyse des corrélations
+- Détection du déséquilibre des classes
 
-🧠 Méthodologie
-
-Le projet a été structuré selon les étapes suivantes :
-
-1️⃣ Compréhension des données
-
-Analyse de la structure du dataset
-
-Étude de la distribution des classes
-
-Identification des valeurs manquantes
-
-2️⃣ Prétraitement des données
-
-Traitement des valeurs manquantes
-
-Suppression des variables peu pertinentes
-
-Normalisation des données numériques
-
-Encodage des variables catégorielles
-
-3️⃣ Analyse Exploratoire (EDA)
-
-Analyse des corrélations
-
-Visualisation des distributions
-
-Détection d’un éventuel déséquilibre des classes
-
-4️⃣ Modélisation
-
+### 4️⃣ Modélisation
 Implémentation et comparaison de plusieurs modèles :
 
-Régression Logistique
+- Régression Logistique
+- Random Forest
+- Support Vector Machine (SVM)
 
-Random Forest
-
-Support Vector Machine (SVM)
-
-5️⃣ Évaluation des performances
-
+### 5️⃣ Évaluation
 Les modèles ont été évalués à l’aide de :
 
-Accuracy
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- Matrice de confusion
 
-Precision
+Le modèle final a été sélectionné selon ses performances globales et sa capacité de généralisation.
 
-Recall
+---
 
-F1-score
+## 📈 Résultats
 
-Matrice de confusion
+- Amélioration des performances après prétraitement
+- Réduction des erreurs de classification
+- Mise en évidence de l’importance du nettoyage des données dans les projets médicaux
 
-Le modèle final a été sélectionné en fonction de ses performances globales et de sa capacité de généralisation.
+---
 
-📈 Résultats
+## 🛠️ Technologies Utilisées
 
-Amélioration significative des performances après le prétraitement
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- Matplotlib
+- Seaborn
+- Jupyter Notebook
 
-Réduction des erreurs de classification
+---
 
-Mise en évidence de l’importance du nettoyage des données dans les projets médicaux
+## 🚀 Exécution du Projet
 
-(Vous pouvez ajouter ici vos scores réels si nécessaire)
-
-🛠️ Technologies utilisées
-
-Python
-
-Pandas
-
-NumPy
-
-Scikit-learn
-
-Matplotlib
-
-Seaborn
-
-Jupyter Notebook
-
-🚀 Exécution du Projet
-# Cloner le repository
+```bash
 git clone https://github.com/votre-username/arrhythmia-classification.git
-
-# Accéder au dossier
 cd arrhythmia-classification
-
-# Installer les dépendances
 pip install -r requirements.txt
-
-# Lancer Jupyter Notebook
 jupyter notebook
-👨‍💻 Auteur
-
-Votre Nom
-Étudiant en Data Science
-Hind Elawity – Groupe B
