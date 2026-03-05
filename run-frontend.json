@@ -1,0 +1,13 @@
+{
+  "name": "CardioSense Frontend",
+  "version": "1.0.0",
+  "description": "Frontend for CardioSense - Cardiac Arrhythmia Detection Application",
+  "scripts": {
+    "dev:frontend": "cd front-end && npm install && npm run dev",
+    "build:frontend": "cd front-end && npm install && npm run build",
+    "start:frontend": "cd front-end && npm run start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

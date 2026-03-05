@@ -1,0 +1,38 @@
+{
+  "name": "cardiosense-app",
+  "version": "1.0.0",
+  "description": "CardioSense - ML-powered Cardiac Arrhythmia Detection Application",
+  "private": true,
+  "workspaces": [
+    "front-end"
+  ],
+  "scripts": {
+    "dev": "cd front-end && npm install && npm run dev",
+    "dev:frontend": "cd front-end && npm run dev",
+    "dev:backend": "cd app && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:mlflow": "mlflow server --host 127.0.0.1 --port 5000",
+    "build": "cd front-end && npm install && npm run build",
+    "build:frontend": "cd front-end && npm run build",
+    "start": "cd front-end && npm start",
+    "start:frontend": "cd front-end && npm start",
+    "lint": "cd front-end && npm run lint",
+    "preview": "cd front-end && npm run build && npm start",
+    "install:all": "npm install && cd front-end && npm install",
+    "setup": "npm install && cd front-end && npm install",
+    "test": "python test_api.py",
+    "verify": "python verify_setup.py"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "machine-learning",
+    "healthcare",
+    "arrhythmia",
+    "ecg",
+    "medical-ai"
+  ],
+  "author": "CardioSense Team",
+  "license": "MIT"
+}
