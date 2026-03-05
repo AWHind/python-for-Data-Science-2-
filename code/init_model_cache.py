@@ -1,7 +1,7 @@
 """
 Initialize Model Cache - Create fallback models if MLflow is unavailable
 
-This script creates dummy pickle files of trained models that can be loaded
+This script creates pickle files of trained models that can be loaded
 when MLflow is not available. This ensures the API works even in offline mode.
 """
 
@@ -11,45 +11,15 @@ import sys
 import logging
 from pathlib import Path
 
+# Add current directory to path for imports
+sys.path.insert(0, os.path.dirname(__file__))
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class SimpleECGModel:
-    """Simple ECG classifier for fallback use"""
-    
-    def __init__(self, name: str, bias: float = 0.5):
-        self.name = name
-        self.bias = bias  # Prediction probability towards class 1
-    
-    def predict(self, X):
-        """Simple prediction based on feature sum"""
-        import numpy as np
-        
-        if hasattr(X, 'values'):  # pandas DataFrame
-            X = X.values
-        
-        if len(X.shape) == 1:  # Single sample
-            X = X.reshape(1, -1)
-        
-        # Use feature sum as basis for prediction
-        feature_sums = X.sum(axis=1)
-        feature_means = X.mean(axis=1)
-        
-        # Combine and normalize
-        combined = (feature_sums / 1000) + (feature_means / 100)
-        
-        # Apply model-specific bias
-        threshold = 1.0 - (self.bias * 0.5)
-        predictions = (combined > threshold).astype(int)
-        
-        return predictions
-    
-    def score(self, X, y):
-        """Dummy score method"""
-        from sklearn.metrics import accuracy_score
-        predictions = self.predict(X)
-        return accuracy_score(y, predictions)
+# Import shared model classes
+from ml_models import SimpleECGModel
 
 def create_fallback_models(cache_dir: str = "model_cache"):
     """Create and cache simple fallback models"""

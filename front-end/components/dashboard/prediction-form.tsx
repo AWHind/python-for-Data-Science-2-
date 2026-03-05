@@ -16,6 +16,7 @@ interface ModelInfo {
   accuracy: number
   f1_score: number
   run_id: string
+  source?: string
 }
 
 interface PredictionResult {

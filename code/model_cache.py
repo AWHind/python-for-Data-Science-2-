@@ -12,8 +12,17 @@ import os
 import pickle
 import numpy as np
 import logging
+import sys
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
+
+# Add current directory to path for ml_models import
+current_dir = os.path.dirname(__file__)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# Import shared model classes
+from ml_models import SimpleECGModel, DummyModel
 
 logger = logging.getLogger(__name__)
 
@@ -25,33 +34,6 @@ class ModelInfo:
     f1_score: float
     run_id: str
     source: str  # "mlflow", "cache", "dummy"
-
-class DummyModel:
-    """Emergency fallback model - returns random but realistic predictions"""
-    
-    def __init__(self, name: str):
-        self.name = name
-        np.random.seed(42)
-    
-    def predict(self, X):
-        """Return predictions based on model-specific logic"""
-        n_samples = len(X) if hasattr(X, '__len__') else 1
-        
-        # Different models have different prediction biases
-        if self.name == "RandomForest":
-            # RF tends to be conservative
-            predictions = np.random.choice([0, 1], n_samples, p=[0.55, 0.45])
-        elif self.name == "XGBoost":
-            # XGB is slightly more aggressive
-            predictions = np.random.choice([0, 1], n_samples, p=[0.5, 0.5])
-        elif self.name == "SVM":
-            # SVM is moderate
-            predictions = np.random.choice([0, 1], n_samples, p=[0.52, 0.48])
-        else:  # LogisticRegression
-            # LR is balanced
-            predictions = np.random.choice([0, 1], n_samples, p=[0.5, 0.5])
-        
-        return predictions
 
 class ModelCache:
     """Manages ML models with multiple loading strategies"""
