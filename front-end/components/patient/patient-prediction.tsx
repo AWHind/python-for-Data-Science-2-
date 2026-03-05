@@ -14,6 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ECGUpload } from "./ecg-upload";
 
 interface PredictionResult {
   id: string;
@@ -289,6 +290,18 @@ export function PatientPrediction() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ECG Upload Section */}
+      <div className="mt-8">
+        <ECGUpload
+          onUploadSuccess={(fileData) => {
+            console.log("[v0] ECG file uploaded:", fileData);
+          }}
+          onGenerateReport={(reportData) => {
+            console.log("[v0] Report generated:", reportData);
+          }}
+        />
       </div>
     </div>
   );

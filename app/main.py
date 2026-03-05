@@ -8,6 +8,7 @@ import sys
 import logging
 from typing import List, Optional, Dict, Any
 from enum import Enum
+from datetime import datetime
 
 # Add code directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "code"))
@@ -385,6 +386,196 @@ def generate_report(data: PatientData):
 # =============================
 # API Info
 # =============================
+@app.post("/patient-report", tags=["Reports"])
+def generate_patient_report(
+    patient_name: str,
+    patient_id: str,
+    age: int,
+    sex: str,
+    prediction_result: int,
+    model_used: str,
+    confidence: float,
+    data: PatientData
+):
+    """
+    Generate a comprehensive PDF report for a patient including:
+    - Patient information
+    - Prediction result and confidence
+    - Model used and its metrics
+    - Key ECG parameters
+    
+    - **patient_name**: Patient's full name
+    - **patient_id**: Unique patient identifier
+    - **age**: Patient's age
+    - **sex**: Patient's gender (M/F)
+    - **prediction_result**: Prediction output (0 or 1)
+    - **model_used**: Name of the model used
+    - **confidence**: Confidence score of prediction
+    - **data**: ECG data features
+    """
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+    from datetime import datetime
+    
+    try:
+        file_path = f"patient_report_{patient_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        doc = SimpleDocTemplate(file_path, title=f"Rapport ECG - {patient_name}")
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#1e40af'),
+            spaceAfter=30,
+            alignment=1
+        )
+        
+        # Title
+        elements.append(Paragraph("Rapport d'Analyse ECG", title_style))
+        elements.append(Spacer(1, 0.3 * inch))
+        
+        # Patient Information Section
+        elements.append(Paragraph("Informations du Patient", styles["Heading2"]))
+        patient_data = [
+            ["Nom Complet", patient_name],
+            ["ID Patient", patient_id],
+            ["Âge", f"{age} ans"],
+            ["Genre", "Masculin" if sex == "M" else "Féminin"],
+            ["Date du Rapport", datetime.now().strftime("%d/%m/%Y %H:%M")],
+        ]
+        
+        patient_table = Table(patient_data)
+        patient_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+        ]))
+        elements.append(patient_table)
+        elements.append(Spacer(1, 0.3 * inch))
+        
+        # Prediction Results Section
+        elements.append(Paragraph("Résultats de la Prédiction", styles["Heading2"]))
+        prediction_text = "Normal (Classe 0)" if prediction_result == 0 else "Anomalie Détectée (Classe 1)"
+        prediction_color = colors.HexColor('#22c55e') if prediction_result == 0 else colors.HexColor('#ef4444')
+        
+        result_data = [
+            ["Classe Prédite", prediction_text],
+            ["Modèle Utilisé", model_used],
+            ["Confiance", f"{confidence*100:.2f}%"],
+            ["Nombre de Features", str(len(data.features))],
+        ]
+        
+        result_table = Table(result_data)
+        result_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightyellow),
+            ('TEXTCOLOR', (1, 0), (1, 0), prediction_color),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+        ]))
+        elements.append(result_table)
+        elements.append(Spacer(1, 0.3 * inch))
+        
+        # Model Metrics Section
+        if model_used in model_cache.models_info if model_cache else {}:
+            elements.append(Paragraph("Métriques du Modèle", styles["Heading2"]))
+            model_info = model_cache.models_info.get(model_used, {}) if model_cache else {}
+            
+            metrics_data = [
+                ["Métrique", "Valeur"],
+                ["Accuracy", f"{model_info.get('accuracy', 0)*100:.2f}%"],
+                ["F1 Score", f"{model_info.get('f1_score', 0):.4f}"],
+                ["Source", model_info.get('source', 'Unknown')],
+            ]
+            
+            metrics_table = Table(metrics_data)
+            metrics_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 11),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+            ]))
+            elements.append(metrics_table)
+            elements.append(Spacer(1, 0.3 * inch))
+        
+        # Footer
+        elements.append(Spacer(1, 0.5 * inch))
+        footer_text = "Ce rapport est généré automatiquement par CardioSense. Consultez un professionnel de santé pour une interprétation complète."
+        elements.append(Paragraph(footer_text, ParagraphStyle(
+            'Footer',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.grey,
+            alignment=1
+        )))
+        
+        doc.build(elements)
+        
+        return FileResponse(
+            file_path,
+            media_type="application/pdf",
+            filename=f"rapport_{patient_id}.pdf"
+        )
+    
+    except ImportError:
+        raise HTTPException(status_code=501, detail="ReportLab not installed")
+    except Exception as e:
+        logger.error(f"❌ Patient report generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+
+
+@app.post("/upload-ecg", tags=["Files"])
+async def upload_ecg_file(
+    patient_id: str,
+    patient_name: str,
+    file_content: str
+):
+    """
+    Upload ECG data file and validate format
+    
+    - **patient_id**: Unique patient identifier
+    - **patient_name**: Patient's name
+    - **file_content**: ECG file content (CSV, JSON, or raw data)
+    """
+    try:
+        # Create upload directory
+        upload_dir = os.path.join(BASE_DIR, "uploads")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = os.path.join(upload_dir, f"{patient_id}_{timestamp}_ecg.csv")
+        
+        with open(file_path, 'w') as f:
+            f.write(file_content)
+        
+        return {
+            "status": "success",
+            "message": "ECG file uploaded successfully",
+            "file_path": file_path,
+            "patient_id": patient_id,
+            "patient_name": patient_name,
+            "upload_time": timestamp
+        }
+    
+    except Exception as e:
+        logger.error(f"❌ ECG upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+
+
 @app.get("/info", tags=["Info"])
 def get_api_info():
     """Get comprehensive API information"""
@@ -398,6 +589,8 @@ def get_api_info():
             "batch_prediction": "/predict/batch",
             "model_metrics": "/models and /models/{model_name}/metrics",
             "pdf_report": "/report",
+            "patient_report": "/patient-report",
+            "ecg_upload": "/upload-ecg",
             "health_check": "/health"
         },
         "expected_features": EXPECTED_FEATURES,
