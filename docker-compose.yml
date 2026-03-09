@@ -4,14 +4,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    container_name: cardiosense-backend
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+    restart: always
 
   frontend:
     build:
       context: ./front-end
-      dockerfile: Dockerfile
+    container_name: cardiosense-frontend
     ports:
       - "3000:3000"
     depends_on:
       - backend
+    restart: always

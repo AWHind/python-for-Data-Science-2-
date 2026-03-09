@@ -1,0 +1,16 @@
+Arrhythmia is a condition where the heart beats irregularly.
+
+Symptoms of arrhythmia include:
+- palpitations
+- dizziness
+- chest pain
+- shortness of breath
+
+Common types of arrhythmia:
+- Atrial fibrillation
+- Ventricular tachycardia
+- Bradycardia
+
+Arrhythmia can be detected using ECG signals.
+
+Treatment may include medication, pacemakers, or lifestyle changes.

@@ -34,6 +34,7 @@ data_path = os.path.join("data", "arrhythmia.data")
 
 df = pd.read_csv(data_path, header=None)
 
+
 # Rename last column to class
 df.rename(columns={df.columns[-1]: "class"}, inplace=True)
 

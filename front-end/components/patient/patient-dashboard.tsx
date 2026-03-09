@@ -5,7 +5,7 @@ import { PatientSidebar } from "./patient-sidebar";
 import { PatientHome } from "./patient-home";
 import { PatientPrediction } from "./patient-prediction";
 import { PatientHistory } from "./patient-history";
-import { Chatbot } from "@/components/chatbot";
+import Chatbot from "@/components/chatbot";
 import { useAuth } from "@/lib/auth-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {

@@ -1,11 +1,19 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from pydantic import BaseModel
 import mlflow.pyfunc
 import pandas as pd
 import os
 import logging
+
+from app.rag import ask_ai
+from app.voice import speech_to_text, text_to_speech
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 
 # =============================
 # Logging
@@ -30,7 +38,7 @@ def root():
     return RedirectResponse(url="/docs")
 
 # =============================
-# CORS (مهم للـ Frontend)
+# CORS (للـ Frontend)
 # =============================
 app.add_middleware(
     CORSMiddleware,
@@ -46,7 +54,7 @@ app.add_middleware(
 # =============================
 # Model Config
 # =============================
-EXPECTED_FEATURES = 278  # ✅ مهم: مش 279
+EXPECTED_FEATURES = 278
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -68,23 +76,27 @@ model = mlflow.pyfunc.load_model(MODEL_DIR)
 logger.info("Model loaded successfully")
 
 # =============================
-# Schema
+# Schemas
 # =============================
 class PatientData(BaseModel):
     features: list[float]
 
+
+class ChatRequest(BaseModel):
+    message: str
+
 # =============================
-# Routes
+# Health Check
 # =============================
 @app.get("/health")
 def health():
     return {"status": "OK"}
 
-
+# =============================
+# Prediction Route
+# =============================
 @app.post("/predict")
 def predict(data: PatientData):
-
-    print("Received features:", len(data.features))
 
     if len(data.features) != EXPECTED_FEATURES:
         raise HTTPException(
@@ -106,44 +118,71 @@ def predict(data: PatientData):
             status_code=500,
             detail="Model prediction failed"
         )
-        from fastapi.responses import FileResponse
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-        from reportlab.lib.styles import ParagraphStyle
-        from reportlab.lib import colors
-        from reportlab.lib.units import inch
-        from reportlab.platypus import Table
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import TableStyle
 
-        @app.get("/report")
-        def generate_report():
+# =============================
+# PDF Report
+# =============================
+@app.get("/report")
+def generate_report():
 
-            file_path = "prediction_report.pdf"
+    file_path = "prediction_report.pdf"
 
-            doc = SimpleDocTemplate(file_path)
-            elements = []
+    doc = SimpleDocTemplate(file_path)
+    elements = []
 
-            styles = getSampleStyleSheet()
-            elements.append(Paragraph("Rapport de Prediction ECG", styles["Heading1"]))
-            elements.append(Spacer(1, 0.5 * inch))
+    styles = getSampleStyleSheet()
 
-            data = [
-                ["Classe Predite", "Classe 1 (Normal)"],
-                ["Modele", "Random Forest"],
-                ["Confiance", "90%"],
-            ]
+    elements.append(Paragraph("Rapport de Prediction ECG", styles["Heading1"]))
+    elements.append(Spacer(1, 0.5 * inch))
 
-            table = Table(data)
-            table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
-            ]))
+    data = [
+        ["Classe Predite", "Classe 1 (Normal)"],
+        ["Modele", "Random Forest"],
+        ["Confiance", "90%"],
+    ]
 
-            elements.append(table)
-            doc.build(elements)
+    table = Table(data)
 
-            return FileResponse(
-                file_path,
-                media_type="application/pdf",
-                filename="rapport_prediction.pdf"
-            )
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    return FileResponse(
+        file_path,
+        media_type="application/pdf",
+        filename="rapport_prediction.pdf"
+    )
+
+# =============================
+# Chatbot
+# =============================
+@app.post("/chat")
+def chat(req: ChatRequest):
+
+    reply = ask_ai(req.message)
+
+    return {
+        "reply": reply
+    }
+
+# =============================
+# Voice Chat
+# =============================
+@app.post("/voice-chat")
+async def voice_chat(audio: bytes):
+
+    text = speech_to_text(audio)
+
+    answer = ask_ai(text)
+
+    audio_reply = text_to_speech(answer)
+
+    return {
+        "text": answer,
+        "audio": audio_reply
+    }

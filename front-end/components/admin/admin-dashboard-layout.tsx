@@ -9,7 +9,7 @@ import { AdminPatients } from "./admin-patients";
 import { AdminValidations } from "./admin-validations";
 import { AdminPerformance } from "./admin-performance";
 import { AdminSettings } from "./admin-settings";
-import { Chatbot } from "@/components/chatbot";
+import Chatbot from "@/components/chatbot";
 import { useAuth } from "@/lib/auth-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {

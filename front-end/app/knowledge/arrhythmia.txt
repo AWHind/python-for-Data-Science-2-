@@ -1,0 +1,10 @@
+Arrhythmia is a heart rhythm disorder.
+
+Types include:
+- Tachycardia
+- Bradycardia
+- Atrial fibrillation
+- PVC
+
+Machine learning models like Random Forest and SVM
+can classify arrhythmia patterns from ECG signals.
